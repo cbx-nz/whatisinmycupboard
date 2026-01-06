@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Error - Stock Keeper</title>
+    <link rel="stylesheet" href="/css/touch.css">
+</head>
+<body>
+    <div class="touch-error">
+        <div class="error-content">
+            <span class="error-code"><%= statusCode || 500 %></span>
+            <span class="error-icon">😕</span>
+            <h1 class="error-title"><%= title || 'Error' %></h1>
+            <p class="error-message"><%= message || 'Something went wrong.' %></p>
+            <a href="/touch" class="touch-btn primary large">Go Home</a>
+        </div>
+    </div>
+    <script src="/js/touch.js"></script>
+</body>
+</html>

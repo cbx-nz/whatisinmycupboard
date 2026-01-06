@@ -1,0 +1,190 @@
+<div class="dashboard-item-detail">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title-group">
+            <a href="/dashboard/location/<%= item.location %>" class="back-link">← <%= locationLabels[item.location] %></a>
+            <h1 class="page-title"><%= item.title %></h1>
+        </div>
+        <div class="page-actions">
+            <a href="/dashboard/edit/<%= item.id %>" class="btn btn-secondary">✏️ Edit</a>
+        </div>
+    </div>
+
+    <div class="item-detail-layout">
+        <!-- Left Column: Image & Quick Actions -->
+        <div class="detail-column image-column">
+            <!-- Item Image -->
+            <div class="item-image-card expiry-<%= item.expiry_status %>">
+                <% if (item.image_path) { %>
+                    <img src="<%= item.image_path %>" alt="<%= item.title %>" class="item-image-full">
+                <% } else { %>
+                    <div class="item-image-placeholder">
+                        <span class="placeholder-icon">📦</span>
+                    </div>
+                <% } %>
+                
+                <!-- Expiry Overlay -->
+                <% if (item.expiry_status === 'expired') { %>
+                    <div class="expiry-overlay expired">
+                        <span class="expiry-icon">🚨</span>
+                        <span class="expiry-text">EXPIRED</span>
+                    </div>
+                <% } else if (item.expiry_status === 'today') { %>
+                    <div class="expiry-overlay today">
+                        <span class="expiry-icon">⏰</span>
+                        <span class="expiry-text">EXPIRES TODAY</span>
+                    </div>
+                <% } else if (item.expiry_status === 'soon') { %>
+                    <div class="expiry-overlay soon">
+                        <span class="expiry-icon">⚠️</span>
+                        <span class="expiry-text"><%= item.days_until_expiry %> days left</span>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Quantity Actions -->
+            <div class="quantity-card">
+                <div class="quantity-display">
+                    <span class="qty-label">Quantity</span>
+                    <span class="qty-value" id="currentQty"><%= item.quantity %></span>
+                    <span class="qty-unit"><%= unitLabels[item.unit] || item.unit %></span>
+                </div>
+                
+                <div class="quantity-actions">
+                    <form action="/items/use/<%= item.id %>" method="POST" class="qty-form">
+                        <input type="hidden" name="amount" value="1">
+                        <input type="hidden" name="returnUrl" value="/dashboard/item/<%= item.id %>">
+                        <button type="submit" class="btn btn-danger qty-btn" <%= item.quantity <= 0 ? 'disabled' : '' %>>
+                            − Use One
+                        </button>
+                    </form>
+                    
+                    <form action="/items/add-quantity/<%= item.id %>" method="POST" class="qty-form">
+                        <input type="hidden" name="amount" value="1">
+                        <input type="hidden" name="returnUrl" value="/dashboard/item/<%= item.id %>">
+                        <button type="submit" class="btn btn-success qty-btn">
+                            + Add One
+                        </button>
+                    </form>
+                </div>
+
+                <% if (item.expiry_status === 'expired' && item.quantity > 0) { %>
+                    <form action="/items/discard/<%= item.id %>" method="POST" class="discard-form">
+                        <input type="hidden" name="action" value="expired">
+                        <input type="hidden" name="returnUrl" value="/dashboard/location/<%= item.location %>">
+                        <button type="submit" class="btn btn-warning btn-full">
+                            🗑️ Discard Expired Item
+                        </button>
+                    </form>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Right Column: Details & History -->
+        <div class="detail-column info-column">
+            <!-- Item Details Card -->
+            <div class="detail-card">
+                <h2 class="card-title">Details</h2>
+                
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Location</span>
+                        <span class="detail-value"><%= locationLabels[item.location] %></span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Category</span>
+                        <span class="detail-value"><%= item.category %></span>
+                    </div>
+                    
+                    <% if (item.brand) { %>
+                        <div class="detail-item">
+                            <span class="detail-label">Brand</span>
+                            <span class="detail-value"><%= item.brand %></span>
+                        </div>
+                    <% } %>
+                    
+                    <% if (item.is_homemade) { %>
+                        <div class="detail-item">
+                            <span class="detail-label">Type</span>
+                            <span class="detail-value">🏠 Homemade</span>
+                        </div>
+                    <% } %>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Date Added</span>
+                        <span class="detail-value"><%= item.date_added %></span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Expiry Date</span>
+                        <span class="detail-value expiry-<%= item.expiry_status %>">
+                            <% if (!item.expiry_date) { %>
+                                No expiry
+                            <% } else if (item.expiry_status === 'expired') { %>
+                                <span class="badge danger"><%= item.expiry_date %> (Expired)</span>
+                            <% } else if (item.expiry_status === 'today') { %>
+                                <span class="badge warning"><%= item.expiry_date %> (Today!)</span>
+                            <% } else if (item.expiry_status === 'soon') { %>
+                                <span class="badge warning"><%= item.expiry_date %> (<%= item.days_until_expiry %> days)</span>
+                            <% } else { %>
+                                <%= item.expiry_date %>
+                            <% } %>
+                        </span>
+                    </div>
+                </div>
+                
+                <% if (item.description) { %>
+                    <div class="detail-notes">
+                        <span class="detail-label">Notes</span>
+                        <p class="notes-text"><%= item.description %></p>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Consumption History Card -->
+            <div class="detail-card">
+                <h2 class="card-title">📜 Usage History</h2>
+                
+                <% if (history.length === 0) { %>
+                    <p class="empty-history">No usage recorded yet.</p>
+                <% } else { %>
+                    <div class="history-list">
+                        <% history.forEach(function(record) { %>
+                            <div class="history-item">
+                                <div class="history-icon">
+                                    <% if (record.action === 'used') { %>✓
+                                    <% } else if (record.action === 'discarded') { %>🗑️
+                                    <% } else { %>⚠️<% } %>
+                                </div>
+                                <div class="history-info">
+                                    <span class="history-action">
+                                        <%= record.action === 'used' ? 'Used' : record.action === 'discarded' ? 'Discarded' : 'Expired' %>
+                                        <%= record.quantity_used %> <%= record.unit %>
+                                    </span>
+                                    <span class="history-date"><%= new Date(record.consumed_at).toLocaleDateString() %></span>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Meta Info -->
+            <div class="meta-info">
+                <span>Created: <%= new Date(item.created_at).toLocaleString() %></span>
+                <span>Updated: <%= new Date(item.updated_at).toLocaleString() %></span>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="danger-zone">
+                <form action="/items/delete/<%= item.id %>" method="POST" 
+                      onsubmit="return confirm('Are you sure you want to delete <%= item.title %>? This cannot be undone.')">
+                    <button type="submit" class="btn btn-danger-outline">
+                        🗑️ Delete Item
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

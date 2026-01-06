@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/touch.css">
+</head>
+<body class="touch-ui">
+    <div class="touch-home">
+        <!-- Header with title and settings -->
+        <header class="touch-header">
+            <h1 class="touch-title">Stock Keeper</h1>
+            <div class="header-actions">
+                <% if (alertCount > 0) { %>
+                <a href="/touch/alerts" class="alert-indicator alert-danger">
+                    <span class="alert-icon">⚠️</span>
+                    <span class="alert-count"><%= alertCount %></span>
+                </a>
+                <% } %>
+                <button type="button" class="settings-btn" id="openSettingsBtn" aria-label="Settings">
+                    ⚙️
+                </button>
+            </div>
+        </header>
+
+        <!-- Alert Banner (if items need attention) -->
+        <% if (expiredItems.length > 0) { %>
+        <a href="/touch/alerts" class="alert-banner expired">
+            <span class="banner-icon">🚨</span>
+            <span class="banner-text"><%= expiredItems.length %> EXPIRED</span>
+        </a>
+        <% } else if (expiringSoon.length > 0) { %>
+        <a href="/touch/alerts" class="alert-banner expiring">
+            <span class="banner-icon">⏰</span>
+            <span class="banner-text"><%= expiringSoon.length %> expiring soon</span>
+        </a>
+        <% } %>
+
+        <!-- Location Grid - Dynamic locations from database -->
+        <div class="location-grid" id="locationGrid">
+            <% if (locations && locations.length > 0) { %>
+                <% locations.forEach(function(loc) { %>
+                <a href="/touch/location/<%= loc.id %>" class="location-card <%= loc.type %>" data-location="<%= loc.id %>" style="--location-color: <%= loc.color %>">
+                    <span class="location-icon"><%= loc.icon %></span>
+                    <span class="location-name"><%= loc.name %></span>
+                    <span class="location-count"><%= loc.count || 0 %></span>
+                </a>
+                <% }); %>
+            <% } else { %>
+                <div class="empty-state">
+                    <p>No locations configured</p>
+                    <a href="/dashboard/locations" class="touch-btn primary">Add Locations</a>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- FAB Button -->
+        <a href="/touch/add" class="fab-button">
+            <span class="fab-icon">+</span>
+        </a>
+
+        <!-- Bottom Navigation -->
+        <nav class="touch-nav">
+            <a href="/touch" class="nav-item active">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="/touch/alerts" class="nav-item <%= alertCount > 0 ? 'has-badge' : '' %>">
+                <span class="nav-icon">⚠️</span>
+                <span class="nav-label">Alerts</span>
+                <% if (alertCount > 0) { %>
+                <span class="nav-badge"><%= alertCount %></span>
+                <% } %>
+            </a>
+            <a href="/dashboard/locations" class="nav-item">
+                <span class="nav-icon">📍</span>
+                <span class="nav-label">Locations</span>
+            </a>
+            <a href="/dashboard" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Full View</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="/js/touch.js"></script>
+</body>
+</html>

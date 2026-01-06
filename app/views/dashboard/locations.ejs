@@ -1,0 +1,464 @@
+<div class="dashboard-locations">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">📍 Manage Locations</h1>
+        <div class="page-actions">
+            <a href="/dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Add New Location Form -->
+    <section class="dashboard-section">
+        <h2 class="section-title">Add New Location</h2>
+        <form action="/locations/create" method="POST" class="add-location-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Location Name</label>
+                    <input type="text" id="name" name="name" placeholder="e.g., Kitchen Freezer" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="type">Type</label>
+                    <select id="type" name="type">
+                        <option value="fridge">Fridge</option>
+                        <option value="freezer">Freezer</option>
+                        <option value="cupboard">Cupboard</option>
+                        <option value="pantry">Pantry</option>
+                        <option value="spice">Spice Rack</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group icon-picker">
+                    <label for="icon">Icon</label>
+                    <select id="icon" name="icon">
+                        <option value="🧊">🧊 Fridge</option>
+                        <option value="❄️">❄️ Freezer</option>
+                        <option value="🗄️">🗄️ Cupboard</option>
+                        <option value="🌶️">🌶️ Spice</option>
+                        <option value="📦">📦 Box</option>
+                        <option value="🏪">🏪 Pantry</option>
+                        <option value="🧂">🧂 Salt</option>
+                        <option value="🥫">🥫 Canned</option>
+                        <option value="🍶">🍶 Jar</option>
+                        <option value="🚪">🚪 Door</option>
+                        <option value="🧺">🧺 Basket</option>
+                        <option value="🗃️">🗃️ Drawer</option>
+                    </select>
+                </div>
+                
+                <div class="form-group color-picker">
+                    <label for="color">Color</label>
+                    <input type="color" id="color" name="color" value="#4fc3f7">
+                </div>
+                
+                <button type="submit" class="btn btn-success">
+                    <span class="btn-icon">+</span>
+                    Add Location
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Existing Locations -->
+    <section class="dashboard-section">
+        <h2 class="section-title">Your Locations (<%= locations.length %>)</h2>
+        
+        <% if (locations.length === 0) { %>
+        <div class="empty-state">
+            <div class="empty-icon">📍</div>
+            <h3>No Locations Yet</h3>
+            <p>Add your first storage location above to get started!</p>
+        </div>
+        <% } else { %>
+        <div class="locations-list">
+            <% locations.forEach(function(loc) { %>
+            <div class="location-item" data-id="<%= loc.id %>">
+                <div class="location-preview" style="background-color: <%= loc.color %>20; border-color: <%= loc.color %>">
+                    <span class="location-icon"><%= loc.icon %></span>
+                </div>
+                
+                <div class="location-details">
+                    <h3 class="location-name"><%= loc.name %></h3>
+                    <div class="location-meta">
+                        <span class="location-type"><%= loc.type %></span>
+                        <span class="location-count"><%= loc.itemCount %> items</span>
+                        <span class="location-visibility <%= loc.is_visible ? 'visible' : 'hidden' %>">
+                            <%= loc.is_visible ? '👁️ Visible' : '🚫 Hidden' %>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="location-actions">
+                    <button type="button" class="btn btn-icon edit-location-btn" 
+                            data-id="<%= loc.id %>"
+                            data-name="<%= loc.name %>"
+                            data-type="<%= loc.type %>"
+                            data-icon="<%= loc.icon %>"
+                            data-color="<%= loc.color %>"
+                            data-visible="<%= loc.is_visible %>"
+                            title="Edit">
+                        ✏️
+                    </button>
+                    
+                    <% if (loc.itemCount === 0) { %>
+                    <form action="/locations/delete/<%= loc.id %>" method="POST" class="delete-form" 
+                          onsubmit="return confirm('Delete <%= loc.name %>? This cannot be undone.');">
+                        <button type="submit" class="btn btn-icon btn-danger" title="Delete">
+                            🗑️
+                        </button>
+                    </form>
+                    <% } else { %>
+                    <button type="button" class="btn btn-icon btn-disabled" 
+                            title="Cannot delete - has <%= loc.itemCount %> items" disabled>
+                        🗑️
+                    </button>
+                    <% } %>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+    </section>
+</div>
+
+<!-- Edit Location Modal -->
+<div class="modal" id="editLocationModal">
+    <div class="modal-overlay" onclick="closeEditModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Location</h2>
+            <button type="button" class="close-btn" onclick="closeEditModal()">✕</button>
+        </div>
+        <form id="editLocationForm" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editName">Location Name</label>
+                    <input type="text" id="editName" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editType">Type</label>
+                    <select id="editType" name="type">
+                        <option value="fridge">Fridge</option>
+                        <option value="freezer">Freezer</option>
+                        <option value="cupboard">Cupboard</option>
+                        <option value="pantry">Pantry</option>
+                        <option value="spice">Spice Rack</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group icon-picker">
+                    <label for="editIcon">Icon</label>
+                    <select id="editIcon" name="icon">
+                        <option value="🧊">🧊 Fridge</option>
+                        <option value="❄️">❄️ Freezer</option>
+                        <option value="🗄️">🗄️ Cupboard</option>
+                        <option value="🌶️">🌶️ Spice</option>
+                        <option value="📦">📦 Box</option>
+                        <option value="🏪">🏪 Pantry</option>
+                        <option value="🧂">🧂 Salt</option>
+                        <option value="🥫">🥫 Canned</option>
+                        <option value="🍶">🍶 Jar</option>
+                        <option value="🚪">🚪 Door</option>
+                        <option value="🧺">🧺 Basket</option>
+                        <option value="🗃️">🗃️ Drawer</option>
+                    </select>
+                </div>
+                
+                <div class="form-group color-picker">
+                    <label for="editColor">Color</label>
+                    <input type="color" id="editColor" name="color">
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="editVisible" name="is_visible" value="true">
+                        <span>Show on home screen</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Location Management Styles */
+.add-location-form .form-row {
+    display: flex;
+    gap: var(--space-md);
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.add-location-form .form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.add-location-form .icon-picker,
+.add-location-form .color-picker {
+    flex: 0 0 auto;
+    min-width: 100px;
+}
+
+.add-location-form input[type="color"] {
+    width: 60px;
+    height: 40px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.locations-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.location-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    transition: box-shadow 0.2s;
+}
+
+.location-item:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.location-preview {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    border: 2px solid;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.location-details {
+    flex: 1;
+}
+
+.location-details .location-name {
+    margin: 0 0 var(--space-xs) 0;
+    font-size: 1.1rem;
+}
+
+.location-meta {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.location-type {
+    text-transform: capitalize;
+    background: var(--background);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.location-visibility.hidden {
+    color: var(--danger);
+}
+
+.location-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover:not(:disabled) {
+    background: var(--surface);
+    border-color: var(--primary);
+}
+
+.btn-icon.btn-danger:hover:not(:disabled) {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: white;
+}
+
+.btn-icon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.delete-form {
+    display: inline;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-body {
+    padding: var(--space-lg);
+}
+
+.modal-body .form-group {
+    margin-bottom: var(--space-md);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--border);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--space-xl);
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+}
+
+@media (max-width: 768px) {
+    .add-location-form .form-row {
+        flex-direction: column;
+    }
+    
+    .add-location-form .form-group {
+        width: 100%;
+    }
+    
+    .location-item {
+        flex-wrap: wrap;
+    }
+    
+    .location-details {
+        width: 100%;
+    }
+    
+    .location-actions {
+        margin-left: auto;
+    }
+}
+</style>
+
+<script>
+// Edit Location Modal
+function openEditModal(id, name, type, icon, color, visible) {
+    document.getElementById('editLocationForm').action = '/locations/update/' + id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editType').value = type;
+    document.getElementById('editIcon').value = icon;
+    document.getElementById('editColor').value = color;
+    document.getElementById('editVisible').checked = visible === '1' || visible === 'true' || visible === true;
+    document.getElementById('editLocationModal').classList.add('active');
+}
+
+function closeEditModal() {
+    document.getElementById('editLocationModal').classList.remove('active');
+}
+
+// Attach click handlers to edit buttons
+document.querySelectorAll('.edit-location-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        openEditModal(
+            this.dataset.id,
+            this.dataset.name,
+            this.dataset.type,
+            this.dataset.icon,
+            this.dataset.color,
+            this.dataset.visible
+        );
+    });
+});
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEditModal();
+    }
+});
+</script>

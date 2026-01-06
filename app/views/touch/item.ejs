@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title><%= item.title %> - Stock Keeper</title>
+    <link rel="stylesheet" href="/css/touch.css">
+</head>
+<body>
+    <div class="touch-item-detail">
+        <!-- Header with back button -->
+        <header class="touch-header with-back">
+            <a href="/touch/location/<%= item.location %>" class="back-btn" aria-label="Back">
+                <span>←</span>
+            </a>
+            <h1 class="touch-title"><%= item.title %></h1>
+        </header>
+
+        <!-- Item Display -->
+        <div class="item-display">
+            <!-- Large Image -->
+            <div class="item-image-large expiry-<%= item.expiry_status %>">
+                <% if (item.image_path) { %>
+                    <img src="<%= item.image_path %>" alt="<%= item.title %>">
+                <% } else { %>
+                    <div class="placeholder-image large">
+                        <span class="placeholder-icon">📦</span>
+                    </div>
+                <% } %>
+                
+                <!-- Expiry Overlay -->
+                <% if (item.expiry_status === 'expired') { %>
+                    <div class="expiry-overlay expired">
+                        <span class="expiry-icon">🚨</span>
+                        <span class="expiry-text">EXPIRED</span>
+                    </div>
+                <% } else if (item.expiry_status === 'today') { %>
+                    <div class="expiry-overlay today">
+                        <span class="expiry-icon">⏰</span>
+                        <span class="expiry-text">EXPIRES TODAY</span>
+                    </div>
+                <% } else if (item.expiry_status === 'soon') { %>
+                    <div class="expiry-overlay soon">
+                        <span class="expiry-icon">⚠️</span>
+                        <span class="expiry-text"><%= item.days_until_expiry %> days left</span>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Item Details -->
+            <div class="item-details">
+                <!-- Quantity Display -->
+                <div class="quantity-display">
+                    <span class="qty-value"><%= item.quantity %></span>
+                    <span class="qty-unit"><%= unitLabels[item.unit] || item.unit %></span>
+                </div>
+
+                <!-- Quick Info -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Location</span>
+                        <span class="info-value"><%= locationLabels[item.location] %></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Category</span>
+                        <span class="info-value"><%= item.category %></span>
+                    </div>
+                    <% if (item.brand) { %>
+                        <div class="info-item">
+                            <span class="info-label">Brand</span>
+                            <span class="info-value"><%= item.brand %></span>
+                        </div>
+                    <% } %>
+                    <% if (item.is_homemade) { %>
+                        <div class="info-item">
+                            <span class="info-label">Type</span>
+                            <span class="info-value">🏠 Homemade</span>
+                        </div>
+                    <% } %>
+                    <% if (item.expiry_date) { %>
+                        <div class="info-item">
+                            <span class="info-label">Expires</span>
+                            <span class="info-value expiry-<%= item.expiry_status %>"><%= item.expiry_date %></span>
+                        </div>
+                    <% } %>
+                </div>
+
+                <% if (item.description) { %>
+                    <div class="item-notes">
+                        <p><%= item.description %></p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <% if (item.quantity > 0) { %>
+                <!-- Use Item Form -->
+                <form action="/items/use/<%= item.id %>" method="POST" class="action-form">
+                    <input type="hidden" name="amount" value="1">
+                    <input type="hidden" name="returnUrl" value="/touch/item/<%= item.id %>">
+                    <button type="submit" class="touch-btn danger large">
+                        <span class="btn-icon">−</span>
+                        <span class="btn-text">Use One</span>
+                    </button>
+                </form>
+            <% } %>
+
+            <!-- Add Quantity Form -->
+            <form action="/items/add-quantity/<%= item.id %>" method="POST" class="action-form">
+                <input type="hidden" name="amount" value="1">
+                <input type="hidden" name="returnUrl" value="/touch/item/<%= item.id %>">
+                <button type="submit" class="touch-btn success large">
+                    <span class="btn-icon">+</span>
+                    <span class="btn-text">Add One</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Secondary Actions -->
+        <div class="secondary-actions">
+            <a href="/touch/edit/<%= item.id %>" class="touch-btn secondary">
+                ✏️ Edit
+            </a>
+            
+            <form action="/items/delete/<%= item.id %>" method="POST" class="delete-form" 
+                  onsubmit="return confirm('Delete <%= item.title %>?')">
+                <button type="submit" class="touch-btn danger-outline">
+                    🗑️ Delete
+                </button>
+            </form>
+
+            <% if (item.expiry_status === 'expired' && item.quantity > 0) { %>
+                <form action="/items/discard/<%= item.id %>" method="POST" class="discard-form">
+                    <input type="hidden" name="action" value="expired">
+                    <input type="hidden" name="returnUrl" value="/touch/location/<%= item.location %>">
+                    <button type="submit" class="touch-btn warning">
+                        🗑️ Discard Expired
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+    <script src="/js/touch.js"></script>
+</body>
+</html>

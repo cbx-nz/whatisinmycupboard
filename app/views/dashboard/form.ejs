@@ -1,0 +1,256 @@
+<div class="dashboard-form">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title-group">
+            <a href="<%= item ? '/dashboard/item/' + item.id : '/dashboard' %>" class="back-link">← Back</a>
+            <h1 class="page-title"><%= mode === 'edit' ? 'Edit Item' : 'Add New Item' %></h1>
+        </div>
+    </div>
+
+    <form action="<%= mode === 'edit' ? '/items/update/' + item.id : '/items/create' %>" 
+          method="POST" enctype="multipart/form-data" class="item-form" id="itemForm">
+        
+        <div class="form-layout">
+            <!-- Left Column: Image -->
+            <div class="form-column image-column">
+                <div class="form-card">
+                    <h2 class="card-title">📷 Image</h2>
+                    
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <input type="file" name="image" id="imageInput" accept="image/*" capture="environment" hidden>
+                        
+                        <% if (item && item.image_path) { %>
+                            <img id="imagePreview" class="image-preview" src="<%= item.image_path %>">
+                            <div class="upload-placeholder" id="uploadPlaceholder" style="display: none;">
+                                <span class="upload-icon">📷</span>
+                                <span class="upload-text">Click or drag to upload</span>
+                                <span class="upload-hint">Supports JPEG, PNG, WebP</span>
+                            </div>
+                        <% } else { %>
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <span class="upload-icon">📷</span>
+                                <span class="upload-text">Click or drag to upload</span>
+                                <span class="upload-hint">Supports JPEG, PNG, WebP</span>
+                            </div>
+                            <img id="imagePreview" class="image-preview" style="display: none;">
+                        <% } %>
+                    </div>
+                    
+                    <p class="form-hint">On mobile, this will open your camera.</p>
+                </div>
+            </div>
+
+            <!-- Right Column: Details -->
+            <div class="form-column details-column">
+                <!-- Basic Info Card -->
+                <div class="form-card">
+                    <h2 class="card-title">📝 Basic Info</h2>
+                    
+                    <div class="form-group">
+                        <label for="title" class="form-label required">Item Name</label>
+                        <input type="text" name="title" id="title" required 
+                               class="form-input" placeholder="e.g., Milk, Chicken Breast"
+                               value="<%= item ? item.title : '' %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Notes / Description</label>
+                        <textarea name="description" id="description" class="form-textarea" 
+                                  placeholder="Any additional notes..."><%= item ? (item.description || '') : '' %></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category" class="form-label">Category</label>
+                            <select name="category" id="category" class="form-select">
+                                <% categories.forEach(function(cat) { %>
+                                    <option value="<%= cat.name %>" 
+                                        <%= item && item.category === cat.name ? 'selected' : (!item && cat.name === 'Uncategorized' ? 'selected' : '') %>>
+                                        <%= cat.icon %> <%= cat.name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location & Quantity Card -->
+                <div class="form-card">
+                    <h2 class="card-title">📍 Location & Quantity</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">Storage Location</label>
+                        <div class="location-select">
+                            <% if (locations && locations.length > 0) { %>
+                                <% locations.forEach(function(loc) { %>
+                                <label class="location-option <%= (item ? item.location_id : locationId) == loc.id ? 'selected' : '' %>"
+                                       style="--location-color: <%= loc.color %>">
+                                    <input type="radio" name="location_id" value="<%= loc.id %>" 
+                                           <%= (item ? item.location_id : locationId) == loc.id ? 'checked' : '' %> 
+                                           <%= locations.indexOf(loc) === 0 ? 'required' : '' %>>
+                                    <span class="option-icon"><%= loc.icon %></span>
+                                    <span class="option-label"><%= loc.name %></span>
+                                </label>
+                                <% }); %>
+                            <% } else { %>
+                                <p class="no-locations-warning">
+                                    No storage locations configured. 
+                                    <a href="/dashboard/locations">Add locations first</a>
+                                </p>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" name="quantity" id="quantity" 
+                                   value="<%= item ? item.quantity : 1 %>" min="0" step="0.1" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="unit" class="form-label">Unit</label>
+                            <select name="unit" id="unit" class="form-select">
+                                <option value="pcs" <%= item && item.unit === 'pcs' ? 'selected' : '' %>>Pieces (pcs)</option>
+                                <option value="g" <%= item && item.unit === 'g' ? 'selected' : '' %>>Grams (g)</option>
+                                <option value="kg" <%= item && item.unit === 'kg' ? 'selected' : '' %>>Kilograms (kg)</option>
+                                <option value="ml" <%= item && item.unit === 'ml' ? 'selected' : '' %>>Millilitres (ml)</option>
+                                <option value="L" <%= item && item.unit === 'L' ? 'selected' : '' %>>Litres (L)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Brand & Source Card -->
+                <div class="form-card">
+                    <h2 class="card-title">🏷️ Brand & Source</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label checkbox-label">
+                            <input type="checkbox" name="is_homemade" id="is_homemade" class="form-checkbox"
+                                   <%= item && item.is_homemade ? 'checked' : '' %>>
+                            <span class="checkbox-text">🏠 This is homemade</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group" id="brandGroup" style="<%= item && item.is_homemade ? 'display: none;' : '' %>">
+                        <label for="brand" class="form-label">Brand</label>
+                        <input type="text" name="brand" id="brand" class="form-input" 
+                               placeholder="e.g., Organic Valley, Tesco"
+                               value="<%= item && item.brand ? item.brand : '' %>">
+                    </div>
+                </div>
+
+                <!-- Dates Card -->
+                <div class="form-card">
+                    <h2 class="card-title">📅 Dates</h2>
+                    
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label for="date_added" class="form-label">Date Added</label>
+                            <input type="date" name="date_added" id="date_added" class="form-input"
+                                   value="<%= item ? item.date_added : new Date().toISOString().split('T')[0] %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="expiry_date" class="form-label">Expiry Date</label>
+                            <input type="date" name="expiry_date" id="expiry_date" class="form-input"
+                                   value="<%= item && item.expiry_date ? item.expiry_date : '' %>">
+                            <span class="form-hint">Leave empty if no expiry</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="<%= item ? '/dashboard/item/' + item.id : '/dashboard' %>" class="btn btn-secondary">Cancel</a>
+            
+            <% if (mode === 'edit') { %>
+                <button type="button" class="btn btn-danger" id="deleteBtn">Delete Item</button>
+            <% } %>
+            
+            <button type="submit" class="btn btn-primary">
+                <%= mode === 'edit' ? 'Save Changes' : 'Add Item' %>
+            </button>
+        </div>
+    </form>
+    
+    <% if (mode === 'edit') { %>
+        <!-- Hidden delete form -->
+        <form id="deleteForm" action="/items/delete/<%= item.id %>" method="POST" style="display: none;"></form>
+    <% } %>
+</div>
+
+<script>
+    // Image upload handling
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const imageUploadArea = document.getElementById('imageUploadArea');
+
+    imageUploadArea.addEventListener('click', () => imageInput.click());
+    
+    // Drag and drop
+    imageUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        imageUploadArea.classList.add('dragover');
+    });
+    
+    imageUploadArea.addEventListener('dragleave', () => {
+        imageUploadArea.classList.remove('dragover');
+    });
+    
+    imageUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        imageUploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            imageInput.files = e.dataTransfer.files;
+            showPreview(e.dataTransfer.files[0]);
+        }
+    });
+
+    imageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            showPreview(this.files[0]);
+        }
+    });
+    
+    function showPreview(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+            uploadPlaceholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Toggle brand visibility
+    const homemadeCheckbox = document.getElementById('is_homemade');
+    const brandGroup = document.getElementById('brandGroup');
+    
+    homemadeCheckbox.addEventListener('change', function() {
+        brandGroup.style.display = this.checked ? 'none' : 'block';
+        if (this.checked) {
+            document.getElementById('brand').value = '';
+        }
+    });
+
+    // Location option selection
+    document.querySelectorAll('.location-option input').forEach(input => {
+        input.addEventListener('change', function() {
+            document.querySelectorAll('.location-option').forEach(opt => opt.classList.remove('selected'));
+            this.closest('.location-option').classList.add('selected');
+        });
+    });
+
+    // Delete confirmation
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this item? This cannot be undone.')) {
+                document.getElementById('deleteForm').submit();
+            }
+        });
+    }
+</script>

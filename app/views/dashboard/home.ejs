@@ -1,0 +1,261 @@
+<div class="dashboard-home">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="openSettingsBtn">
+                ⚙️ Customize
+            </button>
+            <a href="/dashboard/add" class="btn btn-success">
+                <span class="btn-icon">+</span>
+                Add Item
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-content">
+                <span class="stat-value"><%= stats.totalItems %></span>
+                <span class="stat-label">Total Items</span>
+            </div>
+        </div>
+        
+        <a href="/dashboard/alerts" class="stat-card clickable <%= stats.expiredCount > 0 ? 'danger' : '' %>">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-content">
+                <span class="stat-value"><%= stats.expiredCount %></span>
+                <span class="stat-label">Expired</span>
+            </div>
+        </a>
+        
+        <a href="/dashboard/alerts" class="stat-card clickable <%= stats.expiringSoonCount > 0 ? 'warning' : '' %>">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-content">
+                <span class="stat-value"><%= stats.expiringSoonCount %></span>
+                <span class="stat-label">Expiring Soon</span>
+            </div>
+        </a>
+        
+        <div class="stat-card <%= stats.lowStockCount > 0 ? 'warning' : '' %>">
+            <div class="stat-icon">📉</div>
+            <div class="stat-content">
+                <span class="stat-value"><%= stats.lowStockCount %></span>
+                <span class="stat-label">Low Stock</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Overview -->
+    <section class="dashboard-section">
+        <div class="section-header">
+            <h2 class="section-title">Storage Locations</h2>
+            <a href="/dashboard/locations" class="section-link">Manage Locations →</a>
+        </div>
+        <div class="location-cards" id="locationGrid">
+            <% if (locations && locations.length > 0) { %>
+                <% locations.forEach(function(loc) { %>
+                <a href="/dashboard/location/<%= loc.id %>" class="location-card" data-location="<%= loc.id %>" style="--location-color: <%= loc.color %>">
+                    <span class="location-icon"><%= loc.icon %></span>
+                    <div class="location-info">
+                        <span class="location-name"><%= loc.name %></span>
+                        <span class="location-count"><%= loc.count || 0 %> items</span>
+                    </div>
+                </a>
+                <% }); %>
+            <% } else { %>
+                <div class="empty-locations">
+                    <p>No locations configured yet</p>
+                    <a href="/dashboard/locations" class="btn btn-primary">Add Your First Location</a>
+                </div>
+            <% } %>
+        </div>
+    </section>
+
+    <% if (expiredItems.length > 0 || expiringSoon.length > 0) { %>
+    <section class="dashboard-section">
+        <div class="section-header">
+            <h2 class="section-title">⚠️ Needs Attention</h2>
+            <a href="/dashboard/alerts" class="section-link">View All →</a>
+        </div>
+        
+        <div class="alert-items-grid">
+            <% expiredItems.slice(0, 3).forEach(function(item) { %>
+            <a href="/dashboard/item/<%= item.id %>" class="alert-item-card expired">
+                <div class="item-thumb">
+                    <% if (item.image_path) { %>
+                    <img src="<%= item.image_path.replace(/(\.[^.]+)$/, '-thumb$1') %>" alt="<%= item.title %>">
+                    <% } else { %>
+                    <span class="placeholder">📦</span>
+                    <% } %>
+                </div>
+                <div class="item-details">
+                    <span class="item-title"><%= item.title %></span>
+                    <span class="item-status expired">EXPIRED</span>
+                </div>
+            </a>
+            <% }); %>
+            
+            <% expiringSoon.slice(0, 3).forEach(function(item) { %>
+            <a href="/dashboard/item/<%= item.id %>" class="alert-item-card warning">
+                <div class="item-thumb">
+                    <% if (item.image_path) { %>
+                    <img src="<%= item.image_path.replace(/(\.[^.]+)$/, '-thumb$1') %>" alt="<%= item.title %>">
+                    <% } else { %>
+                    <span class="placeholder">📦</span>
+                    <% } %>
+                </div>
+                <div class="item-details">
+                    <span class="item-title"><%= item.title %></span>
+                    <span class="item-status warning">
+                        <%= item.days_until_expiry === 0 ? 'Today' : item.days_until_expiry + ' days' %>
+                    </span>
+                </div>
+            </a>
+            <% }); %>
+        </div>
+    </section>
+    <% } %>
+
+    <% if (lowStock.length > 0) { %>
+    <section class="dashboard-section">
+        <div class="section-header">
+            <h2 class="section-title">📉 Low Stock</h2>
+        </div>
+        
+        <div class="low-stock-list">
+            <% lowStock.slice(0, 5).forEach(function(item) { %>
+            <a href="/dashboard/item/<%= item.id %>" class="low-stock-item">
+                <span class="item-title"><%= item.title %></span>
+                <span class="item-location"><%= item.location_name || locationLabels[item.location] || 'Unknown' %></span>
+                <span class="item-qty"><%= item.quantity %> <%= item.unit %></span>
+            </a>
+            <% }); %>
+        </div>
+    </section>
+    <% } %>
+
+    <% if (recentItems.length > 0) { %>
+    <section class="dashboard-section">
+        <div class="section-header">
+            <h2 class="section-title">📋 Recent Items</h2>
+            <a href="/dashboard/inventory" class="section-link">View All →</a>
+        </div>
+        
+        <div class="recent-items-table">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Location</th>
+                        <th>Qty</th>
+                        <th>Expiry</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% recentItems.forEach(function(item) { %>
+                    <tr class="expiry-row-<%= item.expiry_status %>" onclick="location.href='/dashboard/item/<%= item.id %>'">
+                        <td class="cell-title">
+                            <%= item.title %>
+                        </td>
+                        <td><%= locationLabels[item.location] %></td>
+                        <td><%= item.quantity %> <%= item.unit %></td>
+                        <td class="cell-expiry">
+                            <% if (!item.expiry_date) { %>
+                            —
+                            <% } else if (item.expiry_status === 'expired') { %>
+                            <span class="badge danger">Expired</span>
+                            <% } else if (item.expiry_status === 'today') { %>
+                            <span class="badge warning">Today</span>
+                            <% } else if (item.expiry_status === 'soon') { %>
+                            <span class="badge warning"><%= item.days_until_expiry %>d</span>
+                            <% } else { %>
+                            <%= item.expiry_date %>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <% } %>
+
+    <% if (stats.totalItems === 0) { %>
+    <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h2>Your Cupboard is Empty</h2>
+        <p>Start by adding your first item to track your home inventory.</p>
+        <a href="/dashboard/add" class="btn btn-success">Add Your First Item</a>
+    </div>
+    <% } %>
+</div>
+
+<!-- Settings Modal -->
+<div class="settings-modal" id="settingsModal">
+    <div class="settings-overlay" id="settingsOverlay"></div>
+    <div class="settings-panel dashboard-settings">
+        <div class="settings-header">
+            <h2>⚙️ Display Settings</h2>
+            <button type="button" class="close-btn" id="closeSettingsBtn">✕</button>
+        </div>
+        
+        <div class="settings-content">
+            <p class="settings-desc">Choose which storage locations to show on the home screen:</p>
+            
+            <div class="location-toggles">
+                <label class="location-toggle">
+                    <input type="checkbox" id="toggleFridge" data-location="fridge" checked>
+                    <span class="toggle-icon">🧊</span>
+                    <span class="toggle-label">Fridge</span>
+                    <span class="toggle-switch"></span>
+                </label>
+                
+                <label class="location-toggle">
+                    <input type="checkbox" id="toggleFreezer" data-location="freezer" checked>
+                    <span class="toggle-icon">❄️</span>
+                    <span class="toggle-label">Freezer</span>
+                    <span class="toggle-switch"></span>
+                </label>
+                
+                <label class="location-toggle">
+                    <input type="checkbox" id="toggleCupboard" data-location="cupboard" checked>
+                    <span class="toggle-icon">🗄️</span>
+                    <span class="toggle-label">Cupboard</span>
+                    <span class="toggle-switch"></span>
+                </label>
+                
+                <label class="location-toggle">
+                    <input type="checkbox" id="toggleSpice" data-location="spice" checked>
+                    <span class="toggle-icon">🌶️</span>
+                    <span class="toggle-label">Spice Rack</span>
+                    <span class="toggle-switch"></span>
+                </label>
+            </div>
+
+            <div class="settings-option">
+                <label class="option-toggle">
+                    <input type="checkbox" id="autoRedirect">
+                    <span class="toggle-switch"></span>
+                    <span class="option-text">
+                        <strong>Auto-open single location</strong>
+                        <small>If only one location is selected, go directly to it</small>
+                    </span>
+                </label>
+            </div>
+
+            <div class="settings-warning" id="settingsWarning" style="display: none;">
+                ⚠️ At least one location must be selected
+            </div>
+        </div>
+        
+        <div class="settings-footer">
+            <button type="button" class="btn btn-secondary" id="resetSettingsBtn">Reset to Default</button>
+            <button type="button" class="btn btn-primary" id="saveSettingsBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/home-settings.js"></script>

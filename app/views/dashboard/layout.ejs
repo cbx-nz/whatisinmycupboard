@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="color-scheme" content="light dark">
+    
+    <title><%= title %> | Stock Keeper</title>
+    
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="dashboard-ui" data-theme="auto">
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+            <span class="hamburger"></span>
+        </button>
+        <h1 class="app-title">Stock Keeper</h1>
+        <a href="/dashboard/add" class="header-add-btn" aria-label="Add item">+</a>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">📦 Stock Keeper</h1>
+            <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">×</button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item <%= currentPath === '/dashboard' ? 'active' : '' %>">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="/dashboard/inventory" class="nav-item <%= currentPath === '/dashboard/inventory' ? 'active' : '' %>">
+                <span class="nav-icon">📋</span>
+                <span class="nav-text">All Items</span>
+            </a>
+            
+            <div class="nav-divider">
+                <span>Locations</span>
+            </div>
+            
+            <a href="/dashboard/location/fridge" class="nav-item <%= currentPath.includes('/fridge') ? 'active' : '' %>">
+                <span class="nav-icon">🧊</span>
+                <span class="nav-text">Fridge</span>
+            </a>
+            <a href="/dashboard/location/freezer" class="nav-item <%= currentPath.includes('/freezer') ? 'active' : '' %>">
+                <span class="nav-icon">❄️</span>
+                <span class="nav-text">Freezer</span>
+            </a>
+            <a href="/dashboard/location/cupboard" class="nav-item <%= currentPath.includes('/cupboard') ? 'active' : '' %>">
+                <span class="nav-icon">🗄️</span>
+                <span class="nav-text">Cupboard</span>
+            </a>
+            <a href="/dashboard/location/spice" class="nav-item <%= currentPath.includes('/spice') ? 'active' : '' %>">
+                <span class="nav-icon">🌶️</span>
+                <span class="nav-text">Spices</span>
+            </a>
+            
+            <div class="nav-divider">
+                <span>Manage</span>
+            </div>
+            
+            <a href="/dashboard/alerts" class="nav-item <%= currentPath.includes('/alerts') ? 'active' : '' %>">
+                <span class="nav-icon">⚠️</span>
+                <span class="nav-text">Alerts</span>
+            </a>
+            <a href="/dashboard/history" class="nav-item <%= currentPath.includes('/history') ? 'active' : '' %>">
+                <span class="nav-icon">📜</span>
+                <span class="nav-text">History</span>
+            </a>
+            <a href="/dashboard/add" class="nav-item nav-add <%= currentPath.includes('/add') ? 'active' : '' %>">
+                <span class="nav-icon">➕</span>
+                <span class="nav-text">Add Item</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="/api/export/csv" class="nav-item">
+                <span class="nav-icon">📥</span>
+                <span class="nav-text">Export CSV</span>
+            </a>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                <span class="nav-icon theme-icon">🌓</span>
+                <span class="nav-text theme-text">Dark Mode</span>
+            </button>
+            <a href="/touch" class="nav-item nav-switch">
+                <span class="nav-icon">📱</span>
+                <span class="nav-text">Touchscreen Mode</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <%- body %>
+    </main>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

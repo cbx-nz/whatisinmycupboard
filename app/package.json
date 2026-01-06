@@ -1,0 +1,32 @@
+{
+  "name": "stock-keeper",
+  "version": "1.0.0",
+  "description": "Home inventory & food stock management system for Raspberry Pi touchscreen and LAN devices",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "init-db": "node db/init.js"
+  },
+  "keywords": [
+    "inventory",
+    "food",
+    "stock",
+    "raspberry-pi",
+    "touchscreen",
+    "kitchen"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-ejs-layouts": "^2.5.1",
+    "multer": "^2.0.0",
+    "sharp": "^0.33.2",
+    "sql.js": "^1.10.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

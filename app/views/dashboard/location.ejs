@@ -1,0 +1,154 @@
+<div class="dashboard-location">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title-group">
+            <a href="/dashboard" class="back-link">← Dashboard</a>
+            <h1 class="page-title"><%= locationLabels[location] %></h1>
+        </div>
+        <a href="/dashboard/add?location=<%= location %>" class="btn btn-primary">
+            <span class="btn-icon">+</span>
+            Add Item
+        </a>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <form action="/dashboard/location/<%= location %>" method="GET" class="filters-form" id="filtersForm">
+            <!-- Search -->
+            <div class="filter-group search-group">
+                <input type="text" name="search" placeholder="Search..." 
+                       class="filter-input search-input" value="<%= filters.search || '' %>">
+                <button type="submit" class="search-btn">🔍</button>
+            </div>
+            
+            <!-- Category Filter -->
+            <select name="category" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                <% categories.forEach(function(cat) { %>
+                    <option value="<%= cat.name %>" <%= filters.category === cat.name ? 'selected' : '' %>>
+                        <%= cat.icon %> <%= cat.name %>
+                    </option>
+                <% }); %>
+            </select>
+            
+            <!-- Expiry Filter -->
+            <select name="expiry" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Expiry</option>
+                <option value="expired" <%= filters.expiry === 'expired' ? 'selected' : '' %>>🚨 Expired</option>
+                <option value="today" <%= filters.expiry === 'today' ? 'selected' : '' %>>⏰ Today</option>
+                <option value="soon" <%= filters.expiry === 'soon' ? 'selected' : '' %>>⚠️ Soon</option>
+                <option value="ok" <%= filters.expiry === 'ok' ? 'selected' : '' %>>✅ OK</option>
+            </select>
+            
+            <!-- View Toggle -->
+            <div class="view-toggle">
+                <button type="button" class="view-btn <%= viewMode === 'table' ? 'active' : '' %>" 
+                        data-view="table">☰</button>
+                <button type="button" class="view-btn <%= viewMode === 'grid' ? 'active' : '' %>" 
+                        data-view="grid">⊞</button>
+            </div>
+            <input type="hidden" name="view" id="viewInput" value="<%= viewMode %>">
+        </form>
+    </div>
+
+    <!-- Results Count -->
+    <div class="results-info">
+        <span class="results-count"><%= items.length %> items</span>
+    </div>
+
+    <!-- Empty State -->
+    <% if (items.length === 0) { %>
+        <div class="empty-state">
+            <span class="empty-icon">
+                <% if (location === 'fridge') { %>🧊
+                <% } else if (location === 'freezer') { %>❄️
+                <% } else if (location === 'cupboard') { %>🗄️
+                <% } else { %>🌶️<% } %>
+            </span>
+            <h2>No items in <%= locationLabels[location] %></h2>
+            <a href="/dashboard/add?location=<%= location %>" class="btn btn-primary">Add First Item</a>
+        </div>
+    <% } else { %>
+        <!-- Table View -->
+        <div class="items-table-container <%= viewMode === 'table' ? '' : 'hidden' %>" id="tableView">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="col-image"></th>
+                        <th class="col-title">Item</th>
+                        <th class="col-category">Category</th>
+                        <th class="col-qty">Qty</th>
+                        <th class="col-expiry">Expiry</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% items.forEach(function(item) { %>
+                        <tr class="item-row expiry-row-<%= item.expiry_status %>" data-id="<%= item.id %>">
+                            <td class="cell-image">
+                                <% if (item.image_path) { %>
+                                    <img src="<%= item.image_path.replace(/(\.[^.]+)$/, '-thumb$1') %>" alt="" class="table-thumb">
+                                <% } else { %>
+                                    <span class="table-placeholder">📦</span>
+                                <% } %>
+                            </td>
+                            <td class="cell-title">
+                                <a href="/dashboard/item/<%= item.id %>"><%= item.title %></a>
+                                <% if (item.brand) { %><span class="item-brand"><%= item.brand %></span><% } %>
+                            </td>
+                            <td class="cell-category"><%= item.category %></td>
+                            <td class="cell-qty"><%= item.quantity %> <%= item.unit %></td>
+                            <td class="cell-expiry">
+                                <% if (!item.expiry_date) { %>—
+                                <% } else if (item.expiry_status === 'expired') { %>
+                                    <span class="badge danger">Expired</span>
+                                <% } else if (item.expiry_status === 'today') { %>
+                                    <span class="badge warning">Today</span>
+                                <% } else if (item.expiry_status === 'soon') { %>
+                                    <span class="badge warning"><%= item.days_until_expiry %>d</span>
+                                <% } else { %><%= item.expiry_date %><% } %>
+                            </td>
+                            <td class="cell-actions">
+                                <button class="action-btn use-btn" data-id="<%= item.id %>" <%= item.quantity <= 0 ? 'disabled' : '' %>>−</button>
+                                <button class="action-btn add-btn" data-id="<%= item.id %>">+</button>
+                                <a href="/dashboard/edit/<%= item.id %>" class="action-btn">✏️</a>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Grid View -->
+        <div class="items-grid <%= viewMode === 'grid' ? '' : 'hidden' %>" id="gridView">
+            <% items.forEach(function(item) { %>
+                <div class="grid-item expiry-<%= item.expiry_status %>" data-id="<%= item.id %>">
+                    <a href="/dashboard/item/<%= item.id %>" class="grid-item-link">
+                        <div class="grid-item-image">
+                            <% if (item.image_path) { %>
+                                <img src="<%= item.image_path.replace(/(\.[^.]+)$/, '-thumb$1') %>" alt="<%= item.title %>">
+                            <% } else { %>
+                                <span class="placeholder">📦</span>
+                            <% } %>
+                            <% if (item.expiry_status !== 'ok' && item.expiry_status !== 'none') { %>
+                                <span class="expiry-badge <%= item.expiry_status %>">
+                                    <% if (item.expiry_status === 'expired') { %>EXPIRED
+                                    <% } else if (item.expiry_status === 'today') { %>TODAY
+                                    <% } else { %><%= item.days_until_expiry %>d<% } %>
+                                </span>
+                            <% } %>
+                        </div>
+                        <div class="grid-item-info">
+                            <span class="grid-item-title"><%= item.title %></span>
+                            <span class="grid-item-meta"><%= item.quantity %> <%= item.unit %></span>
+                        </div>
+                    </a>
+                    <div class="grid-item-actions">
+                        <button class="action-btn use-btn" data-id="<%= item.id %>" <%= item.quantity <= 0 ? 'disabled' : '' %>>−1</button>
+                        <button class="action-btn add-btn" data-id="<%= item.id %>">+1</button>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    <% } %>
+</div>

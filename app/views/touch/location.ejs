@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title><%= locationLabels[location] %> - Stock Keeper</title>
+    <link rel="stylesheet" href="/css/touch.css">
+</head>
+<body>
+    <div class="touch-location">
+        <!-- Back navigation and title -->
+        <header class="touch-header with-back">
+            <a href="/touch" class="back-btn" aria-label="Back">
+                <span>←</span>
+            </a>
+            <h1 class="touch-title"><%= locationLabels[location] %></h1>
+            <span class="item-count"><%= items.length %> items</span>
+        </header>
+
+        <% if (items.length === 0) { %>
+            <!-- Empty state -->
+            <div class="empty-state">
+                <span class="empty-icon">📦</span>
+                <p class="empty-text">No items in <%= locationLabels[location] %></p>
+                <a href="/touch/add?location=<%= location %>" class="touch-btn primary large">
+                    Add First Item
+                </a>
+            </div>
+        <% } else { %>
+            <!-- Item Grid -->
+            <div class="item-grid">
+                <% items.forEach(function(item) { %>
+                    <div class="item-card expiry-<%= item.expiry_status %>" data-id="<%= item.id %>">
+                        <a href="/touch/item/<%= item.id %>" class="item-link">
+                            <!-- Item Image -->
+                            <div class="item-image">
+                                <% if (item.image_path) { %>
+                                    <img src="<%= item.image_path.replace(/(\.[^.]+)$/, '-thumb$1') %>" 
+                                         alt="<%= item.title %>"
+                                         onerror="this.onerror=null; this.src='/img/placeholder.svg';">
+                                <% } else { %>
+                                    <div class="placeholder-image">
+                                        <span class="placeholder-icon">📦</span>
+                                    </div>
+                                <% } %>
+                                
+                                <!-- Expiry Badge -->
+                                <% if (item.expiry_status === 'expired') { %>
+                                    <span class="expiry-badge expired">EXPIRED</span>
+                                <% } else if (item.expiry_status === 'today') { %>
+                                    <span class="expiry-badge today">TODAY</span>
+                                <% } else if (item.expiry_status === 'soon') { %>
+                                    <span class="expiry-badge soon"><%= item.days_until_expiry %>d</span>
+                                <% } %>
+                            </div>
+                            
+                            <!-- Item Info -->
+                            <div class="item-info">
+                                <span class="item-title"><%= item.title %></span>
+                                <span class="item-qty"><%= item.quantity %> <%= item.unit %></span>
+                            </div>
+                        </a>
+                        
+                        <!-- Quick Use Button -->
+                        <% if (item.quantity > 0) { %>
+                            <form action="/items/use/<%= item.id %>" method="POST" class="quick-use-form">
+                                <input type="hidden" name="amount" value="1">
+                                <input type="hidden" name="returnUrl" value="/touch/location/<%= location %>">
+                                <button type="submit" class="quick-use-btn" aria-label="Use one">
+                                    <span>−1</span>
+                                </button>
+                            </form>
+                        <% } %>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+
+        <!-- Floating Add Button -->
+        <a href="/touch/add?location=<%= location %>" class="fab-button">
+            <span class="fab-icon">+</span>
+        </a>
+    </div>
+    <script src="/js/touch.js"></script>
+</body>
+</html>

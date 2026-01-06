@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Edit <%= item.title %> - Stock Keeper</title>
+    <link rel="stylesheet" href="/css/touch.css">
+</head>
+<body>
+    <div class="touch-form">
+        <!-- Header -->
+        <header class="touch-header with-back">
+            <a href="/touch/item/<%= item.id %>" class="back-btn" aria-label="Back">
+                <span>←</span>
+            </a>
+            <h1 class="touch-title">Edit Item</h1>
+        </header>
+
+        <form action="/items/update/<%= item.id %>" method="POST" enctype="multipart/form-data" class="item-form">
+            <!-- Image Section -->
+            <div class="form-section">
+                <div class="image-upload-area" id="imageUploadArea">
+                    <input type="file" name="image" id="imageInput" accept="image/*" capture="environment" hidden>
+                    <% if (item.image_path) { %>
+                        <img id="imagePreview" class="image-preview" src="<%= item.image_path %>">
+                        <div class="upload-placeholder" id="uploadPlaceholder" style="display: none;">
+                            <span class="upload-icon">📷</span>
+                            <span class="upload-text">Tap to change photo</span>
+                        </div>
+                    <% } else { %>
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <span class="upload-icon">📷</span>
+                            <span class="upload-text">Tap to add photo</span>
+                        </div>
+                        <img id="imagePreview" class="image-preview" style="display: none;">
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Essential Fields -->
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="title" class="form-label">Item Name *</label>
+                    <input type="text" name="title" id="title" required 
+                           class="form-input" value="<%= item.title %>">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location *</label>
+                    <div class="location-select">
+                        <% if (locations && locations.length > 0) { %>
+                            <% locations.forEach(function(loc, index) { %>
+                            <label class="location-option <%= item.location_id == loc.id ? 'selected' : '' %>"
+                                   style="--location-color: <%= loc.color %>">
+                                <input type="radio" name="location_id" value="<%= loc.id %>" 
+                                       <%= item.location_id == loc.id ? 'checked' : '' %>
+                                       <%= index === 0 ? 'required' : '' %>>
+                                <span class="option-icon"><%= loc.icon %></span>
+                                <span class="option-label"><%= loc.name %></span>
+                            </label>
+                            <% }); %>
+                        <% } else { %>
+                            <p class="no-locations">No locations. <a href="/dashboard/locations">Add some</a></p>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" name="quantity" id="quantity" value="<%= item.quantity %>" min="0" step="0.1" class="form-input">
+                    </div>
+                    <div class="form-group half">
+                        <label for="unit" class="form-label">Unit</label>
+                        <select name="unit" id="unit" class="form-select">
+                            <option value="pcs" <%= item.unit === 'pcs' ? 'selected' : '' %>>Pieces</option>
+                            <option value="g" <%= item.unit === 'g' ? 'selected' : '' %>>Grams (g)</option>
+                            <option value="kg" <%= item.unit === 'kg' ? 'selected' : '' %>>Kilograms (kg)</option>
+                            <option value="ml" <%= item.unit === 'ml' ? 'selected' : '' %>>Millilitres (ml)</option>
+                            <option value="L" <%= item.unit === 'L' ? 'selected' : '' %>>Litres (L)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="expiry_date" class="form-label">Expiry Date</label>
+                    <input type="date" name="expiry_date" id="expiry_date" class="form-input" 
+                           value="<%= item.expiry_date || '' %>">
+                </div>
+            </div>
+
+            <!-- Optional Fields -->
+            <details class="form-section optional-section" open>
+                <summary class="optional-toggle">More Options ▼</summary>
+                
+                <div class="form-group">
+                    <label for="category" class="form-label">Category</label>
+                    <select name="category" id="category" class="form-select">
+                        <% categories.forEach(function(cat) { %>
+                            <option value="<%= cat.name %>" <%= item.category === cat.name ? 'selected' : '' %>><%= cat.icon %> <%= cat.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label checkbox-label">
+                        <input type="checkbox" name="is_homemade" id="is_homemade" class="form-checkbox" <%= item.is_homemade ? 'checked' : '' %>>
+                        <span>🏠 Homemade</span>
+                    </label>
+                </div>
+
+                <div class="form-group" id="brandGroup" style="<%= item.is_homemade ? 'display: none;' : '' %>">
+                    <label for="brand" class="form-label">Brand</label>
+                    <input type="text" name="brand" id="brand" class="form-input" value="<%= item.brand || '' %>">
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label">Notes</label>
+                    <textarea name="description" id="description" class="form-textarea"><%= item.description || '' %></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="date_added" class="form-label">Date Added</label>
+                    <input type="date" name="date_added" id="date_added" class="form-input" value="<%= item.date_added %>">
+                </div>
+            </details>
+
+            <!-- Submit Buttons -->
+            <div class="form-actions">
+                <a href="/touch/item/<%= item.id %>" class="touch-btn secondary large">Cancel</a>
+                <button type="submit" class="touch-btn primary large">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Image upload preview
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const imageUploadArea = document.getElementById('imageUploadArea');
+
+        imageUploadArea.addEventListener('click', () => imageInput.click());
+
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    uploadPlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Toggle brand visibility
+        const homemadeCheckbox = document.getElementById('is_homemade');
+        const brandGroup = document.getElementById('brandGroup');
+        
+        homemadeCheckbox.addEventListener('change', function() {
+            brandGroup.style.display = this.checked ? 'none' : 'block';
+        });
+
+        // Location option selection
+        document.querySelectorAll('.location-option input').forEach(input => {
+            input.addEventListener('change', function() {
+                document.querySelectorAll('.location-option').forEach(opt => opt.classList.remove('selected'));
+                this.closest('.location-option').classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>

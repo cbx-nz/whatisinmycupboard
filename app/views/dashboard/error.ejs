@@ -1,0 +1,12 @@
+<div class="dashboard-error">
+    <div class="error-content">
+        <span class="error-code"><%= statusCode || 500 %></span>
+        <span class="error-icon">😕</span>
+        <h1 class="error-title"><%= title || 'Error' %></h1>
+        <p class="error-message"><%= message || 'Something went wrong.' %></p>
+        <div class="error-actions">
+            <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+            <button onclick="history.back()" class="btn btn-secondary">Go Back</button>
+        </div>
+    </div>
+</div>

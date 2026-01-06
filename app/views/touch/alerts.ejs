@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Alerts - Stock Keeper</title>
+    <link rel="stylesheet" href="/css/touch.css">
+</head>
+<body>
+    <div class="touch-alerts">
+        <!-- Header -->
+        <header class="touch-header with-back">
+            <a href="/touch" class="back-btn" aria-label="Back">
+                <span>←</span>
+            </a>
+            <h1 class="touch-title">⚠️ Alerts</h1>
+        </header>
+
+        <% if (expiredItems.length === 0 && expiringSoon.length === 0) { %>
+            <!-- All Clear -->
+            <div class="empty-state success">
+                <span class="empty-icon">✅</span>
+                <p class="empty-text">All items are fresh!</p>
+                <a href="/touch" class="touch-btn primary">Back to Home</a>
+            </div>
+        <% } else { %>
+            <!-- Expired Items Section -->
+            <% if (expiredItems.length > 0) { %>
+                <section class="alert-section">
+                    <h2 class="section-title expired">
+                        <span class="section-icon">🚨</span>
+                        Expired (<%= expiredItems.length %>)
+                    </h2>
+                    <div class="alert-list">
+                        <% expiredItems.forEach(function(item) { %>
+                            <div class="alert-item expired">
+                                <a href="/touch/item/<%= item.id %>" class="alert-link">
+                                    <div class="alert-image">
+                                        <% if (item.image_path) { %>
+                                            <img src="<%= item.image_path.replace(/(\.[^.]+)$/, '-thumb$1') %>" alt="<%= item.title %>">
+                                        <% } else { %>
+                                            <span class="placeholder-icon">📦</span>
+                                        <% } %>
+                                    </div>
+                                    <div class="alert-info">
+                                        <span class="alert-title"><%= item.title %></span>
+                                        <span class="alert-detail"><%= Math.abs(item.days_expired || 0) %> days ago</span>
+                                        <span class="alert-location"><%= locationLabels[item.location] %></span>
+                                    </div>
+                                </a>
+                                <form action="/items/discard/<%= item.id %>" method="POST" class="discard-form">
+                                    <input type="hidden" name="action" value="expired">
+                                    <input type="hidden" name="returnUrl" value="/touch/alerts">
+                                    <button type="submit" class="discard-btn" aria-label="Discard">
+                                        🗑️
+                                    </button>
+                                </form>
+                            </div>
+                        <% }); %>
+                    </div>
+                </section>
+            <% } %>
+
+            <!-- Expiring Soon Section -->
+            <% if (expiringSoon.length > 0) { %>
+                <section class="alert-section">
+                    <h2 class="section-title warning">
+                        <span class="section-icon">⏰</span>
+                        Expiring Soon (<%= expiringSoon.length %>)
+                    </h2>
+                    <div class="alert-list">
+                        <% expiringSoon.forEach(function(item) { %>
+                            <div class="alert-item <%= item.days_until_expiry === 0 ? 'today' : 'soon' %>">
+                                <a href="/touch/item/<%= item.id %>" class="alert-link">
+                                    <div class="alert-image">
+                                        <% if (item.image_path) { %>
+                                            <img src="<%= item.image_path.replace(/(\.[^.]+)$/, '-thumb$1') %>" alt="<%= item.title %>">
+                                        <% } else { %>
+                                            <span class="placeholder-icon">📦</span>
+                                        <% } %>
+                                    </div>
+                                    <div class="alert-info">
+                                        <span class="alert-title"><%= item.title %></span>
+                                        <span class="alert-detail">
+                                            <%= item.days_until_expiry === 0 ? 'Today!' : item.days_until_expiry + ' days left' %>
+                                        </span>
+                                        <span class="alert-location"><%= locationLabels[item.location] %></span>
+                                    </div>
+                                </a>
+                                <form action="/items/use/<%= item.id %>" method="POST" class="use-form">
+                                    <input type="hidden" name="amount" value="1">
+                                    <input type="hidden" name="returnUrl" value="/touch/alerts">
+                                    <button type="submit" class="use-btn" aria-label="Use one" <%= item.quantity <= 0 ? 'disabled' : '' %>>
+                                        −1
+                                    </button>
+                                </form>
+                            </div>
+                        <% }); %>
+                    </div>
+                </section>
+            <% } %>
+        <% } %>
+    </div>
+    <script src="/js/touch.js"></script>
+</body>
+</html>

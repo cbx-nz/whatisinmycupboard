@@ -1,0 +1,168 @@
+<div class="dashboard-alerts">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">⚠️ Alerts</h1>
+    </div>
+
+    <% if (expiredItems.length === 0 && expiringSoon.length === 0 && lowStock.length === 0) { %>
+        <!-- All Clear State -->
+        <div class="all-clear">
+            <span class="all-clear-icon">✅</span>
+            <h2>All Clear!</h2>
+            <p>No expired items, nothing expiring soon, and no low stock items.</p>
+            <a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    <% } else { %>
+        <!-- Alert Summary -->
+        <div class="alert-summary">
+            <div class="summary-card danger <%= expiredItems.length === 0 ? 'inactive' : '' %>">
+                <span class="summary-count"><%= expiredItems.length %></span>
+                <span class="summary-label">Expired</span>
+            </div>
+            <div class="summary-card warning <%= expiringSoon.length === 0 ? 'inactive' : '' %>">
+                <span class="summary-count"><%= expiringSoon.length %></span>
+                <span class="summary-label">Expiring Soon</span>
+            </div>
+            <div class="summary-card info <%= lowStock.length === 0 ? 'inactive' : '' %>">
+                <span class="summary-count"><%= lowStock.length %></span>
+                <span class="summary-label">Low Stock</span>
+            </div>
+        </div>
+
+        <!-- Expired Items Section -->
+        <% if (expiredItems.length > 0) { %>
+            <section class="alert-section">
+                <div class="section-header">
+                    <h2 class="section-title danger">🚨 Expired Items</h2>
+                    <span class="section-count"><%= expiredItems.length %> items</span>
+                </div>
+                
+                <div class="alert-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Location</th>
+                                <th>Expired</th>
+                                <th>Qty</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% expiredItems.forEach(function(item) { %>
+                                <tr class="expiry-row-expired">
+                                    <td class="cell-title">
+                                        <a href="/dashboard/item/<%= item.id %>"><%= item.title %></a>
+                                    </td>
+                                    <td><%= locationLabels[item.location] %></td>
+                                    <td class="cell-danger"><%= Math.abs(item.days_expired || 0) %> days ago</td>
+                                    <td><%= item.quantity %> <%= item.unit %></td>
+                                    <td class="cell-actions">
+                                        <form action="/items/discard/<%= item.id %>" method="POST" style="display: inline;">
+                                            <input type="hidden" name="action" value="expired">
+                                            <input type="hidden" name="returnUrl" value="/dashboard/alerts">
+                                            <button type="submit" class="btn btn-sm btn-danger">Discard</button>
+                                        </form>
+                                        <a href="/dashboard/edit/<%= item.id %>" class="btn btn-sm btn-secondary">Edit</a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <% } %>
+
+        <!-- Expiring Soon Section -->
+        <% if (expiringSoon.length > 0) { %>
+            <section class="alert-section">
+                <div class="section-header">
+                    <h2 class="section-title warning">⏰ Expiring Soon</h2>
+                    <span class="section-count"><%= expiringSoon.length %> items</span>
+                </div>
+                
+                <div class="alert-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Location</th>
+                                <th>Expires</th>
+                                <th>Qty</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% expiringSoon.forEach(function(item) { %>
+                                <tr class="expiry-row-<%= item.days_until_expiry === 0 ? 'today' : 'soon' %>">
+                                    <td class="cell-title">
+                                        <a href="/dashboard/item/<%= item.id %>"><%= item.title %></a>
+                                    </td>
+                                    <td><%= locationLabels[item.location] %></td>
+                                    <td class="cell-warning">
+                                        <%= item.days_until_expiry === 0 ? 'Today!' : item.days_until_expiry + ' days' %>
+                                    </td>
+                                    <td><%= item.quantity %> <%= item.unit %></td>
+                                    <td class="cell-actions">
+                                        <form action="/items/use/<%= item.id %>" method="POST" style="display: inline;">
+                                            <input type="hidden" name="amount" value="1">
+                                            <input type="hidden" name="returnUrl" value="/dashboard/alerts">
+                                            <button type="submit" class="btn btn-sm btn-primary" <%= item.quantity <= 0 ? 'disabled' : '' %>>
+                                                Use
+                                            </button>
+                                        </form>
+                                        <a href="/dashboard/item/<%= item.id %>" class="btn btn-sm btn-secondary">View</a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <% } %>
+
+        <!-- Low Stock Section -->
+        <% if (lowStock.length > 0) { %>
+            <section class="alert-section">
+                <div class="section-header">
+                    <h2 class="section-title info">📉 Low Stock</h2>
+                    <span class="section-count"><%= lowStock.length %> items</span>
+                </div>
+                
+                <div class="alert-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Location</th>
+                                <th>Category</th>
+                                <th>Qty</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% lowStock.forEach(function(item) { %>
+                                <tr>
+                                    <td class="cell-title">
+                                        <a href="/dashboard/item/<%= item.id %>"><%= item.title %></a>
+                                    </td>
+                                    <td><%= locationLabels[item.location] %></td>
+                                    <td><%= item.category %></td>
+                                    <td class="cell-low"><%= item.quantity %> <%= item.unit %></td>
+                                    <td class="cell-actions">
+                                        <form action="/items/add-quantity/<%= item.id %>" method="POST" style="display: inline;">
+                                            <input type="hidden" name="amount" value="1">
+                                            <input type="hidden" name="returnUrl" value="/dashboard/alerts">
+                                            <button type="submit" class="btn btn-sm btn-success">+1</button>
+                                        </form>
+                                        <a href="/dashboard/edit/<%= item.id %>" class="btn btn-sm btn-secondary">Edit</a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <% } %>
+    <% } %>
+</div>
