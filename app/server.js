@@ -128,13 +128,12 @@ app.use((req, res, next) => {
     // Make current path available to templates for navigation highlighting
     res.locals.currentPath = req.path;
     
-    // Make location labels available globally
-    res.locals.locationLabels = {
-        fridge: '🧊 Fridge',
-        freezer: '❄️ Freezer',
-        cupboard: '🗄️ Cupboard',
-        spice: '🌶️ Spice Rack'
-    };
+    // Load dynamic locations from database for all templates
+    try {
+        res.locals.sidebarLocations = db.getLocations(true); // visible only
+    } catch (err) {
+        res.locals.sidebarLocations = [];
+    }
     
     // Make unit labels available globally
     res.locals.unitLabels = {

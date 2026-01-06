@@ -42,7 +42,7 @@
         <div class="location-grid" id="locationGrid">
             <% if (locations && locations.length > 0) { %>
                 <% locations.forEach(function(loc) { %>
-                <a href="/touch/location/<%= loc.id %>" class="location-card <%= loc.type %>" data-location="<%= loc.id %>" style="--location-color: <%= loc.color %>">
+                <a href="/touch/location/<%= loc.id %>" class="location-card <%= loc.type %>" data-location-id="<%= loc.id %>" style="--location-color: <%= loc.color %>">
                     <span class="location-icon"><%= loc.icon %></span>
                     <span class="location-name"><%= loc.name %></span>
                     <span class="location-count"><%= loc.count || 0 %></span>

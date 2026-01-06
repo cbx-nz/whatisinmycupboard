@@ -3,9 +3,9 @@
     <div class="page-header">
         <div class="page-title-group">
             <a href="/dashboard" class="back-link">← Dashboard</a>
-            <h1 class="page-title"><%= locationLabels[location] %></h1>
+            <h1 class="page-title"><%= location.name %></h1>
         </div>
-        <a href="/dashboard/add?location=<%= location %>" class="btn btn-primary">
+        <a href="/dashboard/add?location=<%= location.id %>" class="btn btn-primary">
             <span class="btn-icon">+</span>
             Add Item
         </a>
@@ -13,7 +13,7 @@
 
     <!-- Filters Bar -->
     <div class="filters-bar">
-        <form action="/dashboard/location/<%= location %>" method="GET" class="filters-form" id="filtersForm">
+        <form action="/dashboard/location/<%= location.id %>" method="GET" class="filters-form" id="filtersForm">
             <!-- Search -->
             <div class="filter-group search-group">
                 <input type="text" name="search" placeholder="Search..." 
@@ -59,14 +59,9 @@
     <!-- Empty State -->
     <% if (items.length === 0) { %>
         <div class="empty-state">
-            <span class="empty-icon">
-                <% if (location === 'fridge') { %>🧊
-                <% } else if (location === 'freezer') { %>❄️
-                <% } else if (location === 'cupboard') { %>🗄️
-                <% } else { %>🌶️<% } %>
-            </span>
-            <h2>No items in <%= locationLabels[location] %></h2>
-            <a href="/dashboard/add?location=<%= location %>" class="btn btn-primary">Add First Item</a>
+            <span class="empty-icon"><%= location.icon %></span>
+            <h2>No items in <%= location.name %></h2>
+            <a href="/dashboard/add?location=<%= location.id %>" class="btn btn-primary">Add First Item</a>
         </div>
     <% } else { %>
         <!-- Table View -->

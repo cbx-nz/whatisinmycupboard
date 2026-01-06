@@ -46,7 +46,7 @@
                                     <div class="alert-info">
                                         <span class="alert-title"><%= item.title %></span>
                                         <span class="alert-detail"><%= Math.abs(item.days_expired || 0) %> days ago</span>
-                                        <span class="alert-location"><%= locationLabels[item.location] %></span>
+                                        <span class="alert-location"><%= item.location_name || 'Unknown' %></span>
                                     </div>
                                 </a>
                                 <form action="/items/discard/<%= item.id %>" method="POST" class="discard-form">
@@ -85,7 +85,7 @@
                                         <span class="alert-detail">
                                             <%= item.days_until_expiry === 0 ? 'Today!' : item.days_until_expiry + ' days left' %>
                                         </span>
-                                        <span class="alert-location"><%= locationLabels[item.location] %></span>
+                                        <span class="alert-location"><%= item.location_name || 'Unknown' %></span>
                                     </div>
                                 </a>
                                 <form action="/items/use/<%= item.id %>" method="POST" class="use-form">

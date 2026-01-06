@@ -54,7 +54,7 @@
                                     <td class="cell-title">
                                         <a href="/dashboard/item/<%= item.id %>"><%= item.title %></a>
                                     </td>
-                                    <td><%= locationLabels[item.location] %></td>
+                                    <td><%= item.location_name || 'Unknown' %></td>
                                     <td class="cell-danger"><%= Math.abs(item.days_expired || 0) %> days ago</td>
                                     <td><%= item.quantity %> <%= item.unit %></td>
                                     <td class="cell-actions">
@@ -98,7 +98,7 @@
                                     <td class="cell-title">
                                         <a href="/dashboard/item/<%= item.id %>"><%= item.title %></a>
                                     </td>
-                                    <td><%= locationLabels[item.location] %></td>
+                                    <td><%= item.location_name || 'Unknown' %></td>
                                     <td class="cell-warning">
                                         <%= item.days_until_expiry === 0 ? 'Today!' : item.days_until_expiry + ' days' %>
                                     </td>
@@ -146,7 +146,7 @@
                                     <td class="cell-title">
                                         <a href="/dashboard/item/<%= item.id %>"><%= item.title %></a>
                                     </td>
-                                    <td><%= locationLabels[item.location] %></td>
+                                    <td><%= item.location_name || 'Unknown' %></td>
                                     <td><%= item.category %></td>
                                     <td class="cell-low"><%= item.quantity %> <%= item.unit %></td>
                                     <td class="cell-actions">

@@ -41,21 +41,23 @@
                 <span>Locations</span>
             </div>
             
-            <a href="/dashboard/location/fridge" class="nav-item <%= currentPath.includes('/fridge') ? 'active' : '' %>">
-                <span class="nav-icon">🧊</span>
-                <span class="nav-text">Fridge</span>
-            </a>
-            <a href="/dashboard/location/freezer" class="nav-item <%= currentPath.includes('/freezer') ? 'active' : '' %>">
-                <span class="nav-icon">❄️</span>
-                <span class="nav-text">Freezer</span>
-            </a>
-            <a href="/dashboard/location/cupboard" class="nav-item <%= currentPath.includes('/cupboard') ? 'active' : '' %>">
-                <span class="nav-icon">🗄️</span>
-                <span class="nav-text">Cupboard</span>
-            </a>
-            <a href="/dashboard/location/spice" class="nav-item <%= currentPath.includes('/spice') ? 'active' : '' %>">
-                <span class="nav-icon">🌶️</span>
-                <span class="nav-text">Spices</span>
+            <% if (sidebarLocations && sidebarLocations.length > 0) { %>
+                <% sidebarLocations.forEach(function(loc) { %>
+                    <a href="/dashboard/location/<%= loc.id %>" class="nav-item <%= currentPath.includes('/location/' + loc.id) ? 'active' : '' %>">
+                        <span class="nav-icon"><%= loc.icon %></span>
+                        <span class="nav-text"><%= loc.name %></span>
+                    </a>
+                <% }); %>
+            <% } else { %>
+                <a href="/dashboard/locations" class="nav-item">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-text">Add Location</span>
+                </a>
+            <% } %>
+            
+            <a href="/dashboard/locations" class="nav-item <%= currentPath.includes('/locations') ? 'active' : '' %>">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Manage Locations</span>
             </a>
             
             <div class="nav-divider">

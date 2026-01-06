@@ -22,10 +22,11 @@
             <!-- Location Filter -->
             <select name="location" class="filter-select" onchange="this.form.submit()">
                 <option value="">All Locations</option>
-                <option value="fridge" <%= filters.location === 'fridge' ? 'selected' : '' %>>🧊 Fridge</option>
-                <option value="freezer" <%= filters.location === 'freezer' ? 'selected' : '' %>>❄️ Freezer</option>
-                <option value="cupboard" <%= filters.location === 'cupboard' ? 'selected' : '' %>>🗄️ Cupboard</option>
-                <option value="spice" <%= filters.location === 'spice' ? 'selected' : '' %>>🌶️ Spices</option>
+                <% if (locations && locations.length > 0) { %>
+                    <% locations.forEach(function(loc) { %>
+                        <option value="<%= loc.id %>" <%= filters.location == loc.id ? 'selected' : '' %>><%= loc.icon %> <%= loc.name %></option>
+                    <% }); %>
+                <% } %>
             </select>
             
             <!-- Category Filter -->
@@ -115,7 +116,7 @@
                                 <% } %>
                             </td>
                             <td class="cell-category"><%= item.category %></td>
-                            <td class="cell-location"><%= locationLabels[item.location] %></td>
+                            <td class="cell-location"><%= item.location_name || 'Unknown' %></td>
                             <td class="cell-qty"><%= item.quantity %> <%= item.unit %></td>
                             <td class="cell-expiry">
                                 <% if (!item.expiry_date) { %>

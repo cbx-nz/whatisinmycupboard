@@ -7,6 +7,8 @@
  * - Choose which storage locations to display on home screen
  * - Auto-redirect to a single location if only one is selected
  * - Persist preferences in browser localStorage
+ * 
+ * Now uses dynamic location IDs from the database
  */
 
 (function() {
@@ -17,40 +19,46 @@
     // ========================================================================
     
     const STORAGE_KEY = 'stockkeeper_home_settings';
-    const ALL_LOCATIONS = ['fridge', 'freezer', 'cupboard', 'spice'];
-    
-    const DEFAULT_SETTINGS = {
-        visibleLocations: ['fridge', 'freezer', 'cupboard', 'spice'],
-        autoRedirect: false
-    };
 
     // Detect which UI we're on (touch or dashboard)
     const isTouchUI = document.body.classList.contains('touch-ui');
     const urlPrefix = isTouchUI ? '/touch' : '/dashboard';
+
+    // Get all location IDs from the DOM (populated by server)
+    function getAllLocationIds() {
+        const cards = document.querySelectorAll('[data-location-id]');
+        return Array.from(cards).map(card => card.dataset.locationId);
+    }
 
     // ========================================================================
     // STORAGE FUNCTIONS
     // ========================================================================
     
     function getSettings() {
+        const allLocationIds = getAllLocationIds();
+        
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
-                // Validate and merge with defaults
+                // Validate and filter to existing location IDs
+                const validLocations = Array.isArray(parsed.visibleLocations) 
+                    ? parsed.visibleLocations.filter(id => allLocationIds.includes(String(id)))
+                    : allLocationIds;
+                    
                 return {
-                    visibleLocations: Array.isArray(parsed.visibleLocations) && parsed.visibleLocations.length > 0
-                        ? parsed.visibleLocations.filter(loc => ALL_LOCATIONS.includes(loc))
-                        : DEFAULT_SETTINGS.visibleLocations,
+                    visibleLocations: validLocations.length > 0 ? validLocations : allLocationIds,
                     autoRedirect: typeof parsed.autoRedirect === 'boolean' 
                         ? parsed.autoRedirect 
-                        : DEFAULT_SETTINGS.autoRedirect
+                        : false
                 };
             }
         } catch (e) {
             console.warn('Failed to load settings from localStorage:', e);
         }
-        return { ...DEFAULT_SETTINGS };
+        
+        // Default: show all locations
+        return { visibleLocations: allLocationIds, autoRedirect: false };
     }
 
     function saveSettings(settings) {
@@ -81,13 +89,15 @@
         const locationGrid = document.getElementById('locationGrid');
         if (!locationGrid) return;
 
-        const locationCards = locationGrid.querySelectorAll('[data-location]');
+        const locationCards = locationGrid.querySelectorAll('[data-location-id]');
+        let visibleCount = 0;
         
         locationCards.forEach(card => {
-            const location = card.dataset.location;
-            if (settings.visibleLocations.includes(location)) {
+            const locationId = card.dataset.locationId;
+            if (settings.visibleLocations.includes(locationId)) {
                 card.style.display = '';
                 card.classList.remove('hidden');
+                visibleCount++;
             } else {
                 card.style.display = 'none';
                 card.classList.add('hidden');
@@ -95,9 +105,9 @@
         });
 
         // Adjust grid layout based on visible count
-        const visibleCount = settings.visibleLocations.length;
         locationGrid.classList.remove('grid-1', 'grid-2', 'grid-3', 'grid-4');
-        locationGrid.classList.add(`grid-${visibleCount}`);
+        locationGrid.classList.add(`grid-${Math.min(visibleCount, 4)}`);
+    }
     }
 
     function checkAutoRedirect(settings) {
@@ -125,11 +135,10 @@
 
     function updateModalFromSettings(settings) {
         // Update location checkboxes
-        ALL_LOCATIONS.forEach(loc => {
-            const checkbox = document.querySelector(`[data-location="${loc}"]`);
-            if (checkbox && checkbox.tagName === 'INPUT') {
-                checkbox.checked = settings.visibleLocations.includes(loc);
-            }
+        const checkboxes = document.querySelectorAll('.location-toggle input[data-location-id]');
+        checkboxes.forEach(checkbox => {
+            const locationId = checkbox.dataset.locationId;
+            checkbox.checked = settings.visibleLocations.includes(locationId);
         });
 
         // Update auto-redirect checkbox
@@ -142,10 +151,10 @@
     function getSettingsFromModal() {
         const visibleLocations = [];
         
-        ALL_LOCATIONS.forEach(loc => {
-            const checkbox = document.querySelector(`input[data-location="${loc}"]`);
-            if (checkbox && checkbox.checked) {
-                visibleLocations.push(loc);
+        const checkboxes = document.querySelectorAll('.location-toggle input[data-location-id]');
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                visibleLocations.push(checkbox.dataset.locationId);
             }
         });
 
@@ -215,8 +224,9 @@
 
     function handleReset() {
         resetSettings();
-        updateModalFromSettings(DEFAULT_SETTINGS);
-        applySettings(DEFAULT_SETTINGS);
+        const defaultSettings = { visibleLocations: getAllLocationIds(), autoRedirect: false };
+        updateModalFromSettings(defaultSettings);
+        applySettings(defaultSettings);
         showWarning(false);
     }
 

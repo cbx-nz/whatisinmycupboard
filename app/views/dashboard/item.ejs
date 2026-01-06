@@ -2,7 +2,7 @@
     <!-- Page Header -->
     <div class="page-header">
         <div class="page-title-group">
-            <a href="/dashboard/location/<%= item.location %>" class="back-link">← <%= locationLabels[item.location] %></a>
+            <a href="/dashboard/location/<%= item.location_id %>" class="back-link">← <%= item.location_name || 'Dashboard' %></a>
             <h1 class="page-title"><%= item.title %></h1>
         </div>
         <div class="page-actions">
@@ -71,7 +71,7 @@
                 <% if (item.expiry_status === 'expired' && item.quantity > 0) { %>
                     <form action="/items/discard/<%= item.id %>" method="POST" class="discard-form">
                         <input type="hidden" name="action" value="expired">
-                        <input type="hidden" name="returnUrl" value="/dashboard/location/<%= item.location %>">
+                        <input type="hidden" name="returnUrl" value="/dashboard/location/<%= item.location_id %>">
                         <button type="submit" class="btn btn-warning btn-full">
                             🗑️ Discard Expired Item
                         </button>
@@ -89,7 +89,7 @@
                 <div class="detail-grid">
                     <div class="detail-item">
                         <span class="detail-label">Location</span>
-                        <span class="detail-value"><%= locationLabels[item.location] %></span>
+                        <span class="detail-value"><%= item.location_name || 'Unknown' %></span>
                     </div>
                     
                     <div class="detail-item">

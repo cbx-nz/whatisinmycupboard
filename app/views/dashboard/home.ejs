@@ -57,7 +57,7 @@
         <div class="location-cards" id="locationGrid">
             <% if (locations && locations.length > 0) { %>
                 <% locations.forEach(function(loc) { %>
-                <a href="/dashboard/location/<%= loc.id %>" class="location-card" data-location="<%= loc.id %>" style="--location-color: <%= loc.color %>">
+                <a href="/dashboard/location/<%= loc.id %>" class="location-card" data-location-id="<%= loc.id %>" style="--location-color: <%= loc.color %>">
                     <span class="location-icon"><%= loc.icon %></span>
                     <div class="location-info">
                         <span class="location-name"><%= loc.name %></span>
@@ -129,7 +129,7 @@
             <% lowStock.slice(0, 5).forEach(function(item) { %>
             <a href="/dashboard/item/<%= item.id %>" class="low-stock-item">
                 <span class="item-title"><%= item.title %></span>
-                <span class="item-location"><%= item.location_name || locationLabels[item.location] || 'Unknown' %></span>
+                <span class="item-location"><%= item.location_name || 'Unknown' %></span>
                 <span class="item-qty"><%= item.quantity %> <%= item.unit %></span>
             </a>
             <% }); %>
@@ -160,7 +160,7 @@
                         <td class="cell-title">
                             <%= item.title %>
                         </td>
-                        <td><%= locationLabels[item.location] %></td>
+                        <td><%= item.location_name || 'Unknown' %></td>
                         <td><%= item.quantity %> <%= item.unit %></td>
                         <td class="cell-expiry">
                             <% if (!item.expiry_date) { %>
@@ -206,33 +206,18 @@
             <p class="settings-desc">Choose which storage locations to show on the home screen:</p>
             
             <div class="location-toggles">
-                <label class="location-toggle">
-                    <input type="checkbox" id="toggleFridge" data-location="fridge" checked>
-                    <span class="toggle-icon">🧊</span>
-                    <span class="toggle-label">Fridge</span>
-                    <span class="toggle-switch"></span>
-                </label>
-                
-                <label class="location-toggle">
-                    <input type="checkbox" id="toggleFreezer" data-location="freezer" checked>
-                    <span class="toggle-icon">❄️</span>
-                    <span class="toggle-label">Freezer</span>
-                    <span class="toggle-switch"></span>
-                </label>
-                
-                <label class="location-toggle">
-                    <input type="checkbox" id="toggleCupboard" data-location="cupboard" checked>
-                    <span class="toggle-icon">🗄️</span>
-                    <span class="toggle-label">Cupboard</span>
-                    <span class="toggle-switch"></span>
-                </label>
-                
-                <label class="location-toggle">
-                    <input type="checkbox" id="toggleSpice" data-location="spice" checked>
-                    <span class="toggle-icon">🌶️</span>
-                    <span class="toggle-label">Spice Rack</span>
-                    <span class="toggle-switch"></span>
-                </label>
+                <% if (locations && locations.length > 0) { %>
+                    <% locations.forEach(function(loc) { %>
+                        <label class="location-toggle">
+                            <input type="checkbox" data-location-id="<%= loc.id %>" checked>
+                            <span class="toggle-icon"><%= loc.icon %></span>
+                            <span class="toggle-label"><%= loc.name %></span>
+                            <span class="toggle-switch"></span>
+                        </label>
+                    <% }); %>
+                <% } else { %>
+                    <p class="no-locations-msg">No locations configured. <a href="/dashboard/locations">Add a location</a></p>
+                <% } %>
             </div>
 
             <div class="settings-option">

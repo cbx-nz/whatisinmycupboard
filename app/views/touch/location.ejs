@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title><%= locationLabels[location] %> - Stock Keeper</title>
+    <title><%= location.name %> - Stock Keeper</title>
     <link rel="stylesheet" href="/css/touch.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
             <a href="/touch" class="back-btn" aria-label="Back">
                 <span>←</span>
             </a>
-            <h1 class="touch-title"><%= locationLabels[location] %></h1>
+            <h1 class="touch-title"><%= location.name %></h1>
             <span class="item-count"><%= items.length %> items</span>
         </header>
 
@@ -22,8 +22,8 @@
             <!-- Empty state -->
             <div class="empty-state">
                 <span class="empty-icon">📦</span>
-                <p class="empty-text">No items in <%= locationLabels[location] %></p>
-                <a href="/touch/add?location=<%= location %>" class="touch-btn primary large">
+                <p class="empty-text">No items in <%= location.name %></p>
+                <a href="/touch/add?location=<%= location.id %>" class="touch-btn primary large">
                     Add First Item
                 </a>
             </div>

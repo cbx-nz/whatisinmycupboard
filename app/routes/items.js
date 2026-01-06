@@ -82,7 +82,8 @@ router.get('/touch/location/:locationId', (req, res) => {
             }
             items = db.getItems({ locationId: parseInt(locationId) });
         } else {
-            // Legacy: filter by location type
+            // Legacy: filter by location type (deprecated - use numeric IDs)
+            const legacyLabels = { fridge: '🧊 Fridge', freezer: '❄️ Freezer', cupboard: '🗄️ Cupboard', spice: '🌶️ Spice Rack' };
             const validLocations = ['fridge', 'freezer', 'cupboard', 'spice'];
             if (!validLocations.includes(locationId)) {
                 return res.status(404).render('touch/error', {
@@ -94,7 +95,7 @@ router.get('/touch/location/:locationId', (req, res) => {
             }
             location = { 
                 id: locationId, 
-                name: res.locals.locationLabels[locationId],
+                name: legacyLabels[locationId],
                 type: locationId,
                 icon: locationId === 'fridge' ? '🧊' : locationId === 'freezer' ? '❄️' : locationId === 'cupboard' ? '🗄️' : '🌶️'
             };
@@ -286,11 +287,18 @@ router.get('/dashboard', (req, res) => {
  */
 router.get('/dashboard/inventory', (req, res) => {
     try {
-        const { location, locationId, category, search, expiry, view } = req.query;
+        const { location, category, search, expiry, view } = req.query;
         
         const filters = {};
-        if (locationId) filters.locationId = parseInt(locationId);
-        else if (location) filters.location = location;
+        // Handle location filter - could be numeric ID or legacy string
+        if (location) {
+            const isNumeric = /^\d+$/.test(location);
+            if (isNumeric) {
+                filters.locationId = parseInt(location);
+            } else {
+                filters.location = location;
+            }
+        }
         if (category) filters.category = category;
         if (search) filters.search = search;
         if (expiry) filters.expiryStatus = expiry;
@@ -305,7 +313,7 @@ router.get('/dashboard/inventory', (req, res) => {
             items,
             categories,
             locations,
-            filters: { location, locationId, category, search, expiry },
+            filters: { location, category, search, expiry },
             viewMode: view || 'table'
         });
     } catch (error) {
@@ -352,7 +360,8 @@ router.get('/dashboard/location/:locationId', (req, res) => {
             
             items = db.getItems(filters);
         } else {
-            // Legacy: filter by location type
+            // Legacy: filter by location type (deprecated - use numeric IDs)
+            const legacyLabels = { fridge: '🧊 Fridge', freezer: '❄️ Freezer', cupboard: '🗄️ Cupboard', spice: '🌶️ Spice Rack' };
             const validLocations = ['fridge', 'freezer', 'cupboard', 'spice'];
             if (!validLocations.includes(locationId)) {
                 return res.status(404).render('dashboard/error', {
@@ -365,8 +374,9 @@ router.get('/dashboard/location/:locationId', (req, res) => {
             
             location = { 
                 id: locationId, 
-                name: res.locals.locationLabels[locationId],
-                type: locationId 
+                name: legacyLabels[locationId],
+                type: locationId,
+                icon: locationId === 'fridge' ? '🧊' : locationId === 'freezer' ? '❄️' : locationId === 'cupboard' ? '🗄️' : '🌶️'
             };
             
             const filters = { location: locationId };
